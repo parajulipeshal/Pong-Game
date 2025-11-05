@@ -1,0 +1,81 @@
+﻿@using Logic
+@page "/"
+@rendermode InteractiveServer
+@inject ILogger<Home> logger
+
+<div class=page>
+    <div class=banner>
+        <div class="logo">
+            <h2>Pong-Game</h2>
+        </div>
+    </div>
+    @if(game == null)
+    {
+        <button @onclick=StartGame>Start Game</button>
+    }
+    else
+    {
+    <div class=screen>
+        <div id=app>
+
+            <div class="screen_logic" tabindex="@tabIndex" @onfocusout="_=>StopBar()" @onkeyup="_=>StopBar()"
+                @onkeydown="HandleKeyPress">
+
+                <div class="ball" style="@game.Ball.ToStyle()"></div>
+                <div class="bar" style="@game.LeftPaddle.ToStyle()"></div>
+                <div class="bar" style="@game.RightPaddle.ToStyle()"></div>
+
+                <div class="line"></div>
+
+                <div class="scores">
+                    <div>@game.ScoreAI</div>
+                    <div>@game.ScorePlayer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+
+@code {
+    Game game = null;
+    int tabIndex = 1;
+
+    protected async Task StartGame()
+    {
+        game = new Game();
+        
+        tabIndex = 0;
+        game.Start();
+        StateHasChanged();
+
+        while(true)
+        {
+            game.Tick();
+            StateHasChanged();
+            await Task.Delay(33);
+        }
+    }
+
+    private void StopBar()
+    {
+        game.RightPaddle.MoveDirection = 0;
+    }
+    private void HandleKeyPress(KeyboardEventArgs args)
+    {
+        switch (args.Key)
+        {
+            case "ArrowUp" or "w":
+                game.RightPaddle.MoveDirection = -1;
+                break;
+            case "ArrowDown" or "s":
+                game.RightPaddle.MoveDirection = 1;
+                break;
+            default:
+                StopBar();
+                break;
+
+        }
+    }
+
+}
